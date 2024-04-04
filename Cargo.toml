@@ -1,0 +1,12 @@
+[package]
+name = "nucleo-ui"
+version = "0.1.0"
+authors = ["Monish Thirukkumaran <monish.thir@gmail.com>"]
+license = "MIT"
+edition = "2021"
+
+[dependencies]
+crossterm = "0.27.0"
+nucleo = "0.5.0"
+ratatui = "0.26.0"
+walkdir = "2.5.0"
