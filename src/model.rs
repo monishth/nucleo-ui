@@ -1,33 +1,40 @@
-use std::{error, sync::Arc};
+use std::sync::Arc;
 
-use nucleo::Nucleo;
+use nucleo::{Matcher, Nucleo, Utf32String};
 use ratatui::widgets::ListState;
 
 /// Application result type.
-pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 /// Application.
-pub struct App {
+pub struct FuzzyMatchModel {
     pub running: bool,
     pub result: Option<String>,
     pub input: String,
-    pub prev_input: String,
+    prev_input: String,
     pub items: StatefulList,
+    highlight_matcher: Matcher,
     cursor_position: usize,
+    indices: Vec<u32>,
+    pub snapshot: Snapshot,
 }
 
-impl App {
-    /// Constructs a new instance of [`App`].
+pub struct Snapshot {
+    pub matched_items: Vec<(String, Vec<u32>)>,
+    pub matched_item_count: usize,
+    pub total_item_count: usize,
+}
+
+impl FuzzyMatchModel {
     pub fn new(list: impl IntoIterator<Item = String>, optimise_directories: bool) -> Self {
         let mut config = nucleo::Config::DEFAULT;
         if optimise_directories {
             config = config.match_paths();
         }
-        let nucleo = Nucleo::new(config, Arc::new(|| {}), None, 1);
+        let nucleo: Nucleo<Utf32String> = Nucleo::new(config, Arc::new(|| {}), None, 1);
         let injector = nucleo.injector();
 
         for str in list {
-            injector.push(str, |s, dst| dst[0] = s.to_owned().into());
+            injector.push(Utf32String::from(str), |s, dst| s.clone_into(&mut dst[0]));
         }
 
         Self {
@@ -36,16 +43,49 @@ impl App {
             result: None,
             prev_input: String::new(),
             cursor_position: 0,
+            highlight_matcher: Matcher::new(nucleo::Config::DEFAULT.match_paths()),
             items: StatefulList::new(nucleo),
+            indices: Vec::new(),
+            snapshot: Snapshot {
+                matched_items: vec![],
+                matched_item_count: 0,
+                total_item_count: 0,
+            },
         }
     }
 
-    /// Handles the tick event of the terminal.
+    pub fn snapshot(&mut self, max_items: Option<u32>) -> &Snapshot {
+        let snap = self.items.items.snapshot();
+        let count = snap.matched_item_count();
+        let n = match max_items {
+            Some(max) => std::cmp::min(count, max),
+            None => count,
+        };
+        let matched_items = snap.matched_items(..n);
+        let mut vec = vec![];
+        for item in matched_items {
+            let _score = self.items.items.pattern.column_pattern(0).indices(
+                item.data.slice(..),
+                &mut self.highlight_matcher,
+                &mut self.indices,
+            );
+            self.indices.sort_unstable();
+            self.indices.dedup();
+
+            let indices = self.indices.drain(..).collect();
+            vec.push((item.data.to_owned().to_string(), indices));
+        }
+        self.snapshot.matched_items.clear();
+        self.snapshot.matched_items.extend(vec);
+        self.snapshot.matched_item_count = snap.matched_item_count() as usize;
+        self.snapshot.total_item_count = snap.item_count() as usize;
+        &self.snapshot
+    }
+
     pub fn tick(&mut self) {
         self.items.tick();
     }
 
-    /// Set running to false to quit the application.
     pub fn quit(&mut self) {
         self.running = false;
     }
@@ -53,11 +93,10 @@ impl App {
     pub fn select(&mut self) {
         if let Some(selected) = self.items.state.selected() {
             self.result = self
-                .items
-                .items
-                .snapshot()
-                .get_item(selected as u32)
-                .map(|s| s.data.to_owned());
+                .snapshot
+                .matched_items
+                .get(selected)
+                .map(|s| s.0.to_owned());
         }
     }
 
@@ -122,12 +161,12 @@ impl App {
 
 pub struct StatefulList {
     pub state: ListState,
-    pub items: Nucleo<String>,
+    pub items: Nucleo<Utf32String>,
     pub last_selected: Option<usize>,
 }
 
 impl StatefulList {
-    fn new(matcher: Nucleo<String>) -> StatefulList {
+    fn new(matcher: Nucleo<Utf32String>) -> StatefulList {
         StatefulList {
             state: ListState::default().with_selected(Some(0)),
             items: matcher,
@@ -177,11 +216,4 @@ impl StatefulList {
             input.starts_with(original_input),
         );
     }
-
-    // fn unselect(&mut self) {
-    //     let offset = self.state.offset();
-    //     self.last_selected = self.state.selected();
-    //     self.state.select(None);
-    //     *self.state.offset_mut() = offset;
-    // }
 }

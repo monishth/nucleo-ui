@@ -4,9 +4,17 @@ version = "0.1.0"
 authors = ["Monish Thirukkumaran <monish.thir@gmail.com>"]
 license = "MIT"
 edition = "2021"
+readme = "README.md"
+description = "A simple TUI wrapper around the nucleo fuzzy matching crate"
 
 [dependencies]
+clap = { version = "4.5.4", features = ["derive", "cargo"] }
+color-eyre = { version = "0.6.3", default-features = false }
 crossterm = "0.27.0"
 nucleo = "0.5.0"
-ratatui = "0.26.0"
+ratatui = "0.26.1"
 walkdir = "2.5.0"
+
+[[bin]]
+name = "nucleo"
+path = "src/main.rs"

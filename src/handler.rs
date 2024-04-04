@@ -1,29 +1,34 @@
-use crate::app::{App, AppResult};
+use crate::model::FuzzyMatchModel;
+use color_eyre::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-/// Handles the key events and updates the state of [`App`].
-pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
+pub fn handle_key_events(key_event: KeyEvent, model: &mut FuzzyMatchModel) -> Result<()> {
     match key_event.code {
         KeyCode::Enter => {
-            app.select();
+            model.select();
         }
         KeyCode::Up => {
-            app.up();
+            model.up();
         }
         KeyCode::Down => {
-            app.down();
+            model.down();
         }
         // Exit application on `Ctrl-C`
         KeyCode::Char('c') | KeyCode::Char('C') => {
             if key_event.modifiers == KeyModifiers::CONTROL {
-                app.quit();
+                model.quit();
+            } else {
+                model.enter_char('c');
             }
         }
+        KeyCode::Esc => {
+            model.quit();
+        }
         KeyCode::Char(c) => {
-            app.enter_char(c);
+            model.enter_char(c);
         }
         KeyCode::Backspace => {
-            app.delete_char();
+            model.delete_char();
         }
         // Other handlers you could add here.
         _ => {}

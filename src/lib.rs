@@ -1,5 +1,7 @@
+#![feature(let_chains)]
+use std::io::Write;
 /// Application.
-pub mod app;
+pub mod model;
 
 /// Terminal events handler.
 pub mod event;
@@ -15,19 +17,28 @@ pub mod handler;
 
 pub mod directory;
 
-use app::{App, AppResult};
+pub mod cli;
+
 use event::{Event, EventHandler};
 use handler::handle_key_events;
+use model::FuzzyMatchModel;
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
-use std::io::{self, stdout, Write};
+use std::io::{self, stdout};
 use tui::Tui;
 
-pub fn launch_ui(lists: Option<Vec<String>>) -> AppResult<()> {
-    // Create an application.
-    let mut app = match lists {
-        None => App::new(directory::get_directories(), true),
-        Some(lists) => App::new(lists, false),
+use crate::cli::Cli;
+
+pub fn launch_ui(lists: Option<Vec<String>>, args: Option<Cli>) -> color_eyre::Result<()> {
+    let args = args.unwrap_or_default();
+    let path = args.directory.unwrap_or(std::env::current_dir()?);
+
+    let mut model = match lists {
+        None => FuzzyMatchModel::new(
+            directory::get_directories(path, args.min_depth, args.max_depth)?,
+            true,
+        ),
+        Some(lists) => FuzzyMatchModel::new(lists, false),
     };
 
     // Initialize the terminal user interface.
@@ -38,25 +49,25 @@ pub fn launch_ui(lists: Option<Vec<String>>) -> AppResult<()> {
     tui.init()?;
 
     // Start the main loop.
-    while app.running {
+    while model.running {
         // Render the user interface.
-        tui.draw(&mut app)?;
+        tui.draw(&mut model)?;
         // Handle events.
         match tui.events.next()? {
-            Event::Tick => app.tick(),
-            Event::Key(key_event) => handle_key_events(key_event, &mut app)?,
+            Event::Tick => model.tick(),
+            Event::Key(key_event) => handle_key_events(key_event, &mut model)?,
             Event::Mouse(_) => {}
             Event::Resize(_, _) => {}
         }
 
-        if app.result.is_some() {
-            app.quit();
+        if model.result.is_some() {
+            model.quit();
         }
     }
 
     // Exit the user interface.
     tui.exit()?;
-    if let Some(result) = app.result {
+    if let Some(result) = model.result {
         if let Err(err) = writeln!(stdout(), "{}", result) {
             return Err(err.into());
         };

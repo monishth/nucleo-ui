@@ -2,18 +2,15 @@ use ratatui::{
     layout::{Constraint, Layout},
     style::{Color, Modifier, Style},
     symbols,
+    text::{Line, Span},
     widgets::{LineGauge, List, ListDirection, ListItem, Paragraph},
     Frame,
 };
 
-use crate::app::App;
+use crate::model::FuzzyMatchModel;
 
 /// Renders the user interface widgets.
-pub fn render(app: &mut App, frame: &mut Frame) {
-    let snapshot = app.items.items.snapshot();
-    let total_items = snapshot.item_count();
-    let matched_item_count = snapshot.matched_item_count();
-
+pub fn render(model: &mut FuzzyMatchModel, frame: &mut Frame) {
     let area = frame.size();
     let vertical = Layout::vertical([
         Constraint::Min(0),
@@ -22,32 +19,89 @@ pub fn render(app: &mut App, frame: &mut Frame) {
     ]);
     let [top, line_area, bottom] = vertical.areas(area);
     frame.render_widget(
+        Paragraph::new(format!(">> {}", &model.input))
+            .style(Style::default().fg(Color::Cyan).bg(Color::Black)),
+        bottom,
+    );
+    let max_lines = top.height as u32;
+
+    let snapshot = model.snapshot(Some(max_lines));
+    frame.render_widget(
         LineGauge::default()
             .gauge_style(Style::default().fg(Color::White))
             .line_set(symbols::line::THICK)
             .ratio(1.0)
-            .label(format!("{}/{}", matched_item_count, total_items)),
+            .label(format!(
+                "{}/{}",
+                snapshot.matched_item_count, snapshot.total_item_count
+            )),
         line_area,
     );
-    frame.render_widget(
-        Paragraph::new(format!(">> {}", &app.input))
-            .style(Style::default().fg(Color::Cyan).bg(Color::Black)),
-        bottom,
-    );
 
-    let list = List::new(
-        snapshot
-            .matched_items(..)
-            .map(|item| ListItem::new(item.data.as_str())),
-    )
+    let list = List::new(snapshot.matched_items.iter().map(|item| {
+        let lines = split_highlights(item.0.clone(), item.1.clone());
+        let line = Line::from(
+            lines
+                .into_iter()
+                .map(|(text, highlighted)| {
+                    Span::styled(
+                        text,
+                        if highlighted {
+                            Style::default()
+                                .fg(Color::Red)
+                                .add_modifier(Modifier::UNDERLINED | Modifier::ITALIC)
+                        } else {
+                            Style::default().fg(Color::White)
+                        },
+                    )
+                })
+                .collect::<Vec<Span>>(),
+        );
+        ListItem::new(line)
+    }))
     .style(Style::default().fg(Color::White))
-    .highlight_style(
-        Style::default()
-            .fg(Color::Red)
-            .add_modifier(Modifier::ITALIC),
-    )
+    .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
     .highlight_symbol(">>")
     .repeat_highlight_symbol(true)
     .direction(ListDirection::BottomToTop);
-    frame.render_stateful_widget(list, top, &mut app.items.state);
+
+    frame.render_stateful_widget(list, top, &mut model.items.state);
+}
+
+/// Turns a string and list of ordered highlighted indicies into a list of tuples
+/// of substrings and whether they are highlighted.
+fn split_highlights(input: String, indices: Vec<u32>) -> Vec<(String, bool)> {
+    if indices.is_empty() {
+        return vec![(input, false)];
+    }
+    let string_length = input.chars().count();
+    let mut result = Vec::new();
+
+    let mut is_highlighted = vec![false; string_length];
+    for index in indices {
+        is_highlighted[index as usize] = true;
+    }
+
+    let mut current_string = String::new();
+    let mut current_highlight = is_highlighted[0];
+
+    for (i, c) in input.char_indices() {
+        let should_highlight = is_highlighted[i];
+
+        if should_highlight != current_highlight {
+            if !current_string.is_empty() {
+                result.push((current_string, current_highlight));
+                current_string = String::new();
+            }
+            current_highlight = should_highlight;
+        }
+
+        current_string.push(c);
+    }
+
+    if !current_string.is_empty() {
+        result.push((current_string, current_highlight));
+    }
+
+    result
 }
