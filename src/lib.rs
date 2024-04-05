@@ -1,4 +1,3 @@
-#![feature(let_chains)]
 use std::io::Write;
 /// Application.
 pub mod model;
