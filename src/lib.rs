@@ -31,14 +31,14 @@ use crate::cli::Cli;
 
 pub fn launch_ui(lists: Option<Vec<String>>, args: Option<Cli>) -> color_eyre::Result<()> {
     let args = args.unwrap_or_default();
-    let path = args.directory.unwrap_or(std::env::current_dir()?);
+    let path = args.path.unwrap_or(std::env::current_dir()?);
 
     let mut model = match lists {
         None => FuzzyMatchModel::new(
-            directory::get_directories(path, args.min_depth, args.max_depth)?,
-            true,
+            directory::get_directories(path, args.min_depth, args.max_depth, args.directory)?,
+            args.directory,
         ),
-        Some(lists) => FuzzyMatchModel::new(lists, false),
+        Some(lists) => FuzzyMatchModel::new(lists, args.directory),
     };
 
     // Initialize the terminal user interface.

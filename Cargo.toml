@@ -6,6 +6,8 @@ license = "MIT"
 edition = "2021"
 readme = "README.md"
 description = "A simple TUI wrapper around the nucleo fuzzy matching crate"
+repository = "https://github.com/monishth/nucleo-ui"
+exclude = ["assets/*"]
 
 [dependencies]
 clap = { version = "4.5.4", features = ["derive", "cargo"] }

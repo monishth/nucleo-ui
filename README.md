@@ -60,9 +60,10 @@ The output of nucleo-ui will be written to stdout.
 
 ### Options
 
-- `-d, --directory <PATH>`: Specify path to follow.
-- `--min-depth <NUMBER>`: Specify the minimum depth to search
-- `--max-depth <NUMBER>`: Specify the maximum depth to search
+- `-p, --path`: Specify path to search (default: '.')
+- `-d, --directory`: Specify whether to only look for directories (default: false)
+- `--min-depth <NUMBER>`: Specify the minimum depth to search (default: 1)
+- `--max-depth <NUMBER>`: Specify the maximum depth to search (default: 1)
 - `-h, --help`: Display help information.
 
 ### Using the finder
