@@ -16,6 +16,7 @@ pub struct FuzzyMatchModel {
     cursor_position: usize,
     indices: Vec<u32>,
     pub snapshot: Snapshot,
+    pub height: u32,
 }
 
 pub struct Snapshot {
@@ -41,6 +42,7 @@ impl FuzzyMatchModel {
             running: true,
             input: String::new(),
             result: None,
+            height: 0,
             prev_input: String::new(),
             cursor_position: 0,
             highlight_matcher: Matcher::new(nucleo::Config::DEFAULT.match_paths()),
@@ -54,13 +56,10 @@ impl FuzzyMatchModel {
         }
     }
 
-    pub fn snapshot(&mut self, max_items: Option<u32>) -> &Snapshot {
+    fn update_snapshot(&mut self) {
         let snap = self.items.items.snapshot();
         let count = snap.matched_item_count();
-        let n = match max_items {
-            Some(max) => std::cmp::min(count, max),
-            None => count,
-        };
+        let n = std::cmp::min(count, self.height);
         let matched_items = snap.matched_items(..n);
         let mut vec = vec![];
         for item in matched_items {
@@ -79,11 +78,19 @@ impl FuzzyMatchModel {
         self.snapshot.matched_items.extend(vec);
         self.snapshot.matched_item_count = snap.matched_item_count() as usize;
         self.snapshot.total_item_count = snap.item_count() as usize;
-        &self.snapshot
     }
 
     pub fn tick(&mut self) {
         self.items.tick();
+        self.update_snapshot();
+    }
+
+    pub fn update_height(&mut self, height: u32) {
+        self.height = height;
+    }
+
+    pub fn snapshot(&mut self) -> &Snapshot {
+        &self.snapshot
     }
 
     pub fn quit(&mut self) {
@@ -203,7 +210,7 @@ impl StatefulList {
     }
 
     fn tick(&mut self) {
-        self.items.tick(50);
+        self.items.tick(100);
     }
 
     fn update_input(&mut self, input: &str, original_input: &str) {

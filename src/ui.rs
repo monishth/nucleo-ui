@@ -23,9 +23,9 @@ pub fn render(model: &mut FuzzyMatchModel, frame: &mut Frame) {
             .style(Style::default().fg(Color::Cyan).bg(Color::Black)),
         bottom,
     );
-    let max_lines = top.height as u32;
+    model.update_height(area.height as u32);
 
-    let snapshot = model.snapshot(Some(max_lines));
+    let snapshot = model.snapshot();
     frame.render_widget(
         LineGauge::default()
             .gauge_style(Style::default().fg(Color::White))
