@@ -2,7 +2,7 @@
 # nucleo-ui
 
 nucleo-ui is a simple interactive command-line interface (CLI) tool that provides fast and efficient fuzzy matching capabilities. Leveraging the power of the `nucleo` fuzzy matching library, nucleo offers a simple and intuitive text interface for searching and comparing strings with a degree of imprecision.
-Note: This is an unoffical wrapper around nucleo.
+**Note**: This is an unoffical wrapper around nucleo.
 
 ## Features
 
@@ -54,7 +54,7 @@ With no arguments, nucleo-ui will list directories in the current path with min/
 ```sh
 nucleo 
 ```
-[![asciicast](https://asciinema.org/a/650969.svg)](https://asciinema.org/a/650969)
+[![asciicast](assets/noargs.gif)](https://asciinema.org/a/650969)
 
 The output of nucleo-ui will be written to stdout.
 
@@ -87,7 +87,7 @@ This will load the finder with the output of ls
 ```sh
 ls | nucleo
 ```
-[![asciicast](https://asciinema.org/a/650972.svg)](https://asciinema.org/a/650972)
+[![asciicast](assets/stdin.gif)](https://asciinema.org/a/650972)
 
 ## Contributing
 
