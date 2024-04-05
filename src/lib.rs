@@ -1,5 +1,3 @@
-use std::io::Write;
-/// Application.
 pub mod model;
 
 /// Terminal events handler.
@@ -23,12 +21,15 @@ use handler::handle_key_events;
 use model::FuzzyMatchModel;
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
-use std::io::{self, stdout};
+use std::io;
 use tui::Tui;
 
 use crate::cli::Cli;
 
-pub fn launch_ui(lists: Option<Vec<String>>, args: Option<Cli>) -> color_eyre::Result<()> {
+pub fn interactive_fuzzy_find(
+    lists: Option<Vec<String>>,
+    args: Option<Cli>,
+) -> color_eyre::Result<Option<String>> {
     let args = args.unwrap_or_default();
     let path = args.path.unwrap_or(std::env::current_dir()?);
 
@@ -66,11 +67,6 @@ pub fn launch_ui(lists: Option<Vec<String>>, args: Option<Cli>) -> color_eyre::R
 
     // Exit the user interface.
     tui.exit()?;
-    if let Some(result) = model.result {
-        if let Err(err) = writeln!(stdout(), "{}", result) {
-            return Err(err.into());
-        };
-    }
 
-    Ok(())
+    Ok(model.result)
 }
