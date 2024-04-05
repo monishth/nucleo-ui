@@ -85,7 +85,8 @@ fn split_highlights(input: String, indices: Vec<u32>) -> Vec<(String, bool)> {
     let mut current_string = String::new();
     let mut current_highlight = is_highlighted[0];
 
-    for (i, c) in input.char_indices() {
+    // Wanted to use char_indicies but I think nucleo gives us indices into the array
+    for (i, c) in input.chars().enumerate() {
         let should_highlight = is_highlighted[i];
 
         if should_highlight != current_highlight {
