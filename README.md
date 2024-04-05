@@ -43,7 +43,7 @@ To install nucleo-ui from source, ensure you have Rust and Cargo installed on yo
    cargo install --path .
    ```
 
-After installation, you can run `fuzzymatcher` from your command line.
+After installation, you can run `nucleo` from your command line.
 
 ## Usage
 
