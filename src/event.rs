@@ -4,16 +4,16 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 #[derive(Clone, Copy, Debug)]
-pub enum Event {
+pub(crate) enum Event {
     Tick,
     Key(KeyEvent),
-    Mouse(MouseEvent),
-    Resize(u16, u16),
+    // Mouse(MouseEvent),
+    // Resize(u16, u16),
 }
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct EventHandler {
+pub(crate) struct EventHandler {
     sender: mpsc::Sender<Event>,
     receiver: mpsc::Receiver<Event>,
     handler: thread::JoinHandle<()>,
@@ -35,8 +35,8 @@ impl EventHandler {
                     if event::poll(timeout).expect("failed to poll new events") {
                         match event::read().expect("unable to read event") {
                             CrosstermEvent::Key(e) => sender.send(Event::Key(e)),
-                            CrosstermEvent::Mouse(e) => sender.send(Event::Mouse(e)),
-                            CrosstermEvent::Resize(w, h) => sender.send(Event::Resize(w, h)),
+                            CrosstermEvent::Mouse(_e) => Ok(()), // sender.send(Event::Mouse(e)),
+                            CrosstermEvent::Resize(_w, _h) => Ok(()), //sender.send(Event::Resize(w, h)),
                             CrosstermEvent::FocusGained => Ok(()),
                             CrosstermEvent::FocusLost => Ok(()),
                             CrosstermEvent::Paste(_) => unimplemented!(),

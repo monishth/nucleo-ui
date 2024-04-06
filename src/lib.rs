@@ -56,8 +56,8 @@ pub fn interactive_fuzzy_find(
         match tui.events.next()? {
             Event::Tick => model.tick(),
             Event::Key(key_event) => handle_key_events(key_event, &mut model)?,
-            Event::Mouse(_) => {}
-            Event::Resize(_, _) => {}
+            // Event::Mouse(_) => {}
+            // Event::Resize(_, _) => {}
         }
 
         if model.result.is_some() {
