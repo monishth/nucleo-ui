@@ -12,7 +12,7 @@ pub mod tui;
 /// Event handler.
 pub mod handler;
 
-pub mod directory;
+pub mod walker;
 
 pub mod cli;
 
@@ -35,7 +35,7 @@ pub fn interactive_fuzzy_find(
 
     let mut model = match lists {
         None => FuzzyMatchModel::new(
-            directory::get_directories(path, args.min_depth, args.max_depth, args.directory)?,
+            walker::walk_path(path, args.min_depth, args.max_depth, args.directory)?,
             args.directory,
         ),
         Some(lists) => FuzzyMatchModel::new(lists, args.directory),
