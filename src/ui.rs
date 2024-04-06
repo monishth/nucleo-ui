@@ -1,3 +1,4 @@
+use color_eyre::owo_colors::OwoColorize;
 use ratatui::{
     layout::{Constraint, Layout},
     style::{Color, Modifier, Style},
@@ -60,7 +61,7 @@ pub fn render(model: &mut FuzzyMatchModel, frame: &mut Frame) {
         ListItem::new(line)
     }))
     .style(Style::default().fg(Color::White))
-    .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
+    .highlight_style(Style::default().bg(Color::Rgb(63, 63, 63)))
     .highlight_symbol(">>")
     .repeat_highlight_symbol(true)
     .direction(ListDirection::BottomToTop);
