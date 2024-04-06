@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use walkdir::WalkDir;
 
 /// Get the directories in the given path.
-pub fn walk_path(
+pub(crate) fn walk_path(
     path: PathBuf,
     min_depth: Option<usize>,
     max_depth: Option<usize>,

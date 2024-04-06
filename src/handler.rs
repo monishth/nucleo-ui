@@ -2,7 +2,7 @@ use crate::model::FuzzyMatchModel;
 use color_eyre::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-pub fn handle_key_events(key_event: KeyEvent, model: &mut FuzzyMatchModel) -> Result<()> {
+pub(crate) fn handle_key_events(key_event: KeyEvent, model: &mut FuzzyMatchModel) -> Result<()> {
     match key_event.code {
         KeyCode::Enter => {
             model.select();

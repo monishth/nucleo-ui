@@ -3,10 +3,7 @@ use std::sync::Arc;
 use nucleo::{Matcher, Nucleo, Utf32String};
 use ratatui::widgets::ListState;
 
-/// Application result type.
-
-/// Application.
-pub struct FuzzyMatchModel {
+pub(crate) struct FuzzyMatchModel {
     pub running: bool,
     pub result: Option<String>,
     pub input: String,
@@ -19,7 +16,7 @@ pub struct FuzzyMatchModel {
     pub height: u32,
 }
 
-pub struct Snapshot {
+pub(crate) struct Snapshot {
     pub matched_items: Vec<(String, Vec<u32>)>,
     pub matched_item_count: usize,
     pub total_item_count: usize,
@@ -161,9 +158,9 @@ impl FuzzyMatchModel {
         new_cursor_pos.clamp(0, self.input.len())
     }
 
-    pub fn reset_cursor(&mut self) {
-        self.cursor_position = 0;
-    }
+    // pub fn reset_cursor(&mut self) {
+    //     self.cursor_position = 0;
+    // }
 }
 
 pub struct StatefulList {

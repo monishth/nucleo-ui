@@ -1,4 +1,3 @@
-use color_eyre::owo_colors::OwoColorize;
 use ratatui::{
     layout::{Constraint, Layout},
     style::{Color, Modifier, Style},
@@ -11,7 +10,7 @@ use ratatui::{
 use crate::model::FuzzyMatchModel;
 
 /// Renders the user interface widgets.
-pub fn render(model: &mut FuzzyMatchModel, frame: &mut Frame) {
+pub(crate) fn render(model: &mut FuzzyMatchModel, frame: &mut Frame) {
     let area = frame.size();
     let vertical = Layout::vertical([
         Constraint::Min(0),

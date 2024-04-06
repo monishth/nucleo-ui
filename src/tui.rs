@@ -10,7 +10,7 @@ use std::io;
 use std::panic;
 
 #[derive(Debug)]
-pub struct Tui<B: Backend> {
+pub(crate) struct Tui<B: Backend> {
     terminal: Terminal<B>,
     pub events: EventHandler,
 }
