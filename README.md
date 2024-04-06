@@ -2,7 +2,10 @@
 # nucleo-ui
 
 nucleo-ui is a simple interactive command-line interface (CLI) tool that provides fast and efficient fuzzy matching capabilities. Leveraging the power of the `nucleo` fuzzy matching library, nucleo offers a simple and intuitive text interface for searching and comparing strings with a degree of imprecision.
-**Note**: This is an unoffical wrapper around nucleo.
+> [!NOTE]
+> This is an unoffical wrapper around nucleo.
+
+![Crates.io Version](https://img.shields.io/crates/v/nucleo-ui)
 
 ## Features
 
