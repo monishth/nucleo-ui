@@ -58,7 +58,7 @@ impl FuzzyMatchModel {
         let count = snap.matched_item_count();
         let n = std::cmp::min(count, self.height);
         let matched_items = snap.matched_items(..n);
-        let mut vec = vec![];
+        self.snapshot.matched_items.clear();
         for item in matched_items {
             let _score = self.items.items.pattern.column_pattern(0).indices(
                 item.data.slice(..),
@@ -69,10 +69,10 @@ impl FuzzyMatchModel {
             self.indices.dedup();
 
             let indices = self.indices.drain(..).collect();
-            vec.push((item.data.to_owned().to_string(), indices));
+            self.snapshot
+                .matched_items
+                .push((item.data.to_owned().to_string(), indices));
         }
-        self.snapshot.matched_items.clear();
-        self.snapshot.matched_items.extend(vec);
         self.snapshot.matched_item_count = snap.matched_item_count() as usize;
         self.snapshot.total_item_count = snap.item_count() as usize;
     }
