@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use nucleo::{Matcher, Nucleo, Utf32String};
 use ratatui::widgets::ListState;
+use smol_str::{SmolStr, ToSmolStr};
 
 pub(crate) struct FuzzyMatchModel {
     pub running: bool,
@@ -17,7 +18,7 @@ pub(crate) struct FuzzyMatchModel {
 }
 
 pub(crate) struct Snapshot {
-    pub matched_items: Vec<(String, Vec<u32>)>,
+    pub matched_items: Vec<(SmolStr, Vec<u32>)>,
     pub matched_item_count: usize,
     pub total_item_count: usize,
 }
@@ -71,7 +72,7 @@ impl FuzzyMatchModel {
             let indices = self.indices.drain(..).collect();
             self.snapshot
                 .matched_items
-                .push((item.data.to_owned().to_string(), indices));
+                .push((item.data.to_smolstr(), indices));
         }
         self.snapshot.matched_item_count = snap.matched_item_count() as usize;
         self.snapshot.total_item_count = snap.item_count() as usize;
@@ -100,7 +101,7 @@ impl FuzzyMatchModel {
                 .snapshot
                 .matched_items
                 .get(selected)
-                .map(|s| s.0.to_owned());
+                .map(|s| s.0.to_owned().into());
         }
     }
 
