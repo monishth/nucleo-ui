@@ -86,7 +86,7 @@ impl FuzzyMatchModel {
         self.height = height;
     }
 
-    pub fn snapshot(&mut self) -> &Snapshot {
+    pub fn snapshot(&self) -> &Snapshot {
         &self.snapshot
     }
 

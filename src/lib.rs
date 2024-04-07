@@ -65,6 +65,8 @@ pub fn interactive_fuzzy_find(
         }
     }
 
+    
+
     // Exit the user interface.
     tui.exit()?;
 

@@ -24,7 +24,7 @@ pub(crate) fn render(model: &mut FuzzyMatchModel, frame: &mut Frame) {
         bottom,
     );
     model.update_height(area.height as u32);
-
+    let mut state = model.items.state.clone();
     let snapshot = model.snapshot();
     frame.render_widget(
         LineGauge::default()
@@ -39,7 +39,7 @@ pub(crate) fn render(model: &mut FuzzyMatchModel, frame: &mut Frame) {
     );
 
     let list = List::new(snapshot.matched_items.iter().map(|item| {
-        let lines = split_highlights(item.0.clone(), item.1.clone());
+        let lines = split_highlights(&item.0, &item.1);
         let line = Line::from(
             lines
                 .into_iter()
@@ -65,12 +65,12 @@ pub(crate) fn render(model: &mut FuzzyMatchModel, frame: &mut Frame) {
     .repeat_highlight_symbol(true)
     .direction(ListDirection::BottomToTop);
 
-    frame.render_stateful_widget(list, top, &mut model.items.state);
+    frame.render_stateful_widget(list, top, &mut state);
 }
 
 /// Turns a string and list of ordered highlighted indicies into a list of tuples
 /// of substrings and whether they are highlighted.
-fn split_highlights(input: String, indices: Vec<u32>) -> Vec<(String, bool)> {
+fn split_highlights<'a>(input: &'a str, indices: &Vec<u32>) -> Vec<(&'a str, bool)> {
     if indices.is_empty() {
         return vec![(input, false)];
     }
@@ -79,29 +79,27 @@ fn split_highlights(input: String, indices: Vec<u32>) -> Vec<(String, bool)> {
 
     let mut is_highlighted = vec![false; string_length];
     for index in indices {
-        is_highlighted[index as usize] = true;
+        is_highlighted[*index as usize] = true;
     }
 
-    let mut current_string = String::new();
+    let mut current_string = 0;
     let mut current_highlight = is_highlighted[0];
 
     // Wanted to use char_indicies but I think nucleo gives us indices into the array
-    for (i, c) in input.chars().enumerate() {
+    for (i, _) in input.chars().enumerate() {
         let should_highlight = is_highlighted[i];
 
         if should_highlight != current_highlight {
-            if !current_string.is_empty() {
-                result.push((current_string, current_highlight));
-                current_string = String::new();
+            if i > current_string {
+                result.push((&input[current_string..i], current_highlight));
+                current_string = i;
             }
             current_highlight = should_highlight;
         }
-
-        current_string.push(c);
     }
 
-    if !current_string.is_empty() {
-        result.push((current_string, current_highlight));
+    if current_string < input.len() {
+        result.push((&input[current_string..], current_highlight));
     }
 
     result
